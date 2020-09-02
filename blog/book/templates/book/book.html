@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body{
+            background: #000 url(/static/img/pattern.png);
+        }
+        .container{
+            background-color: #fff;
+            margin-top: 20px;
+            margin-bottom: 200px;
+        }
+        .bor{
+            border: solid 1px black;
+        }
+        .top-title{
+            padding: 20px 0;
+        }
+        .index-login{
+            position: absolute; 
+            right: 20px; 
+            bottom: 8px;
+        }
+        #chapter-list>ul{
+            list-style: none;
+            margin: 10px 0;
+            padding: 0;
+        }
+        #chapter-list>ul>li>a{
+            padding-left: 8px;
+        }
+        #chapter-list>ul ul{
+            list-style: none;
+            margin: 10px 0;
+            padding: 0;
+        }
+        #chapter-list>ul ul>li>a{
+            padding-left: 20px;
+        }
+        #chapter-list a{
+            text-decoration:none;
+            display: block;
+        }
+        #chapter-list a:hover{
+            background-color: #dc3545 !important;
+            color:  #fff !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h4 class="top-title">我们的征途，是星辰大海</h4>
+
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            {% csrf_token %}
+            <a class="navbar-brand" href="/">首页</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                <a class="nav-link" href="/article/">文章 <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/note/?page=1">笔记</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link active" href="/book/">书籍</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/tool/">工具箱</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav index-login">
+                {% if user.userIF %}
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">欢迎你({{ user.name }})</a>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+                            退出
+                        </button>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/login/">登录</a>
+                    </li>
+                {% endif %}
+            </ul>
+            </div>
+        </nav>
+
+         <!-- 面包屑导航 -->
+         <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/">首页</a></li>
+              <li class="breadcrumb-item"><a href="/book/">书籍</a></li>
+              {% if switch %}
+                <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+              {% else %}
+                <li class="breadcrumb-item"><a href="/book/book/?id={{ book_id }}">{{ title }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ chapter }}</li>
+                <input id="book_id" type="hidden" value="{{ book_id }}">
+                <input id="catalog_id" type="hidden" value="{{ catalog_id }}">
+              {% endif %}
+            </ol>
+        </nav>
+
+        <div class="row">
+
+            <div id="chapter-list" class="col-2 border-right">
+                {% for yi in catalog %}
+                    {% if catalog_id == yi.id %}
+                        <a class="h6 text-white bg-danger" href="/book/book/?id={{ book_id }}&catalog_id={{ yi.id }}">{{ yi.name }}</a>
+                    {% else %}
+                        <a class="h6" href="/book/book/?id={{ book_id }}&catalog_id={{ yi.id }}">{{ yi.name }}</a>
+                    {% endif %}
+                    {% if yi.cun %}
+                        <ul>
+                            {% for er in yi.er %}
+                                {% if catalog_id == er.id %}
+                                    <li><a class="text-white bg-danger" href="/book/book/?id={{ book_id }}&catalog_id={{ er.id }}">{{ er.name }}</a>
+                                {% else %}
+                                    <li><a href="/book/book/?id={{ book_id }}&catalog_id={{ er.id }}">{{ er.name }}</a>
+                                {% endif %}
+                                    {% if er.cun %}
+                                        <ul>
+                                            {% for san in er.san %}
+                                            {% if catalog_id == san.id %}
+                                                <li><a class="text-white bg-danger" href="/book/book/?id={{ book_id }}&catalog_id={{ san.id }}">{{ san.name }}</a></li>
+                                            {% else %}
+                                                <li><a href="/book/book/?id={{ book_id }}&catalog_id={{ san.id }}">{{ san.name }}</a></li>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endfor %}
+
+            </div>
+            <div class="col-10">
+                {% if switch %}
+                    <div class="row">
+                        <div class="col-4">
+                            <img src="/{{ img }}" class="img-fluid" alt=" image">
+                        </div>
+                        <div class="col-8">
+                            <h4>{{ title }}</h4>
+                            <div class="row">
+                                <div class="col-12">
+                                    <small class="text-muted float-left">{{ synopsis }}</small>
+                                </div>
+                                <div class="col-5" style="padding: 0;">
+                                    <table class="table table-borderless">
+                                        <tbody>
+                                          <tr>
+                                            <td>作&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;者:</td>
+                                            <td>{{ author }}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>出&nbsp;&nbsp;版&nbsp;&nbsp;社:</td>
+                                            <td>{{ press }}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>出版时间:</td>
+                                            <td>{{ pub_date|date:"Y-m" }}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>入手时间:</td>
+                                            <td>{{ creation_time|date:"Y-m-d" }}</td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    {% if user.userIF %}
+                        <div id="editor1">{{ text|safe }}</div>
+                        <div id="editor2" class="border"></div>
+                        <div>
+                            <button id="xiu" type="button" class="btn btn-warning">修改</button>
+                            <button id="bao" type="button" class="btn btn-success">保存修改</button>
+                        </div>
+                    {% else %}
+                        <div id="editor1">{{ text|safe }}</div>
+                        <div id="editor2" class="d-none"></div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 退出 -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">是否确定退出</h5>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+            <button id="quit" type="button" class="btn btn-primary">确认退出</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.staticfile.org/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.14.7/umd/popper.min.js" ></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js" ></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/wangEditor/3.1.1/wangEditor.min.js"></script>
+    <script>
+
+        $(function(){
+
+            var E = window.wangEditor
+            var editor = new E('#editor2', '#editor1')
+            editor.customConfig.zIndex = 0
+            editor.create()
+            editor.customConfig.uploadImgShowBase64 = true
+            editor.$textElem.attr('contenteditable', false)
+
+            // 修改
+            $('#xiu').on('click', function(){
+                editor.$textElem.attr('contenteditable', true)
+            })
+
+            // 保存修改
+            $('#bao').on('click', function(){
+                editor.$textElem.attr('contenteditable', false)
+
+                var book_id = $('#book_id').val()
+                var catalog_id =$('#catalog_id').val()
+                var text = editor.txt.html()
+                var CsrfToken = $("[name='csrfmiddlewaretoken']").val()
+                var token = localStorage.getItem('token')
+                
+                $.ajax({
+                    url: '/book/book/',
+                    type: 'post',
+                    data: {
+                        'book_id': book_id,
+                        'catalog_id': catalog_id,
+                        'text': text,
+                        'token': token,
+                        'csrfmiddlewaretoken': CsrfToken
+                    },
+                    dataType: 'json',
+                    success: function(data){
+                        if(data.code == 200){
+                            alert('修改成功')
+                            location.reload(true)
+                        }else{
+                            alert(data.error)
+                        }
+                    }
+                })
+            })
+
+            // 退出
+            $('#quit').on('click', function(){
+                var CsrfToken = $("[name='csrfmiddlewaretoken']").val()
+
+                $.ajax({
+                    url: '/quit/',
+                    type: 'post',
+                    data:{
+                        'csrfmiddlewaretoken': CsrfToken
+                    },
+                    dataType: 'json',
+                    success: function(data){
+                        if(data.code == 200){
+                            location.reload(true)
+                        }else{
+                            alert(data.error)
+                        }
+                    }
+                })
+            })
+
+
+
+        })
+       
+
+    </script>
+</body>
+</html>

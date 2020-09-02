@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+{% if user.userIF %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书籍列表编辑</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+         body{
+            background: #000 url(/static/img/pattern.png);
+        }
+        .container{
+            background-color: #fff;
+            margin-top: 20px;
+            margin-bottom: 200px;
+            overflow: hidden;
+        }
+        .bor{
+            border: solid 1px black;
+        }
+        .top-title{
+            padding: 20px 0;
+        }
+        .index-login{
+            position: absolute; 
+            right: 20px; 
+            bottom: 8px;
+        }
+        #catalog-list{
+            margin-bottom: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h4 class="top-title">我们的征途，是星辰大海</h4>
+
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            {% csrf_token %}
+            <a class="navbar-brand" href="/">首页</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                <a class="nav-link" href="/article/">文章 <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/note/?page=1">笔记</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link active" href="/book/?page=1">书籍</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/tool/">工具箱</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav index-login">
+                {% if user.userIF %}
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">欢迎你({{ user.name }})</a>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+                            退出
+                        </button>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/login/">登录</a>
+                    </li>
+                {% endif %}
+            </ul>
+            </div>
+        </nav>
+
+         <!-- 面包屑导航 -->
+         <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/">首页</a></li>
+              <li class="breadcrumb-item"><a href="/book/">书籍</a></li>
+              <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+                
+            <div class="col-4">
+                <input id="book_id" type="hidden" value="{{ id }}">
+                <img src="/{{ img }}" class="img-fluid" alt=" image">
+            </div>
+            <div class="col-8">
+                <h4>{{ title }}</h4>
+                <div class="row">
+                    <div class="col-12">
+                        <small class="text-muted float-left">{{ synopsis }}</small>
+                    </div>
+                    <div class="col-4" style="padding: 0;">
+                        <table class="table table-borderless">
+                            <tbody>
+                              <tr>
+                                <td>作&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;者:</td>
+                                <td>{{ author }}</td>
+                              </tr>
+                              <tr>
+                                <td>出&nbsp;&nbsp;版&nbsp;&nbsp;社:</td>
+                                <td>{{ press }}</td>
+                              </tr>
+                              <tr>
+                                <td>出版时间:</td>
+                                <td>{{ pub_date }}</td>
+                              </tr>
+                              <tr>
+                                <td>入手时间:</td>
+                                <td>{{ creation_time }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                    </div>
+                </div>
+                
+            </div>
+         
+        </div>
+
+        <div class="alert alert-primary" role="alert" style="margin-top: 30px;">
+            <div class="d-flex justify-content-between">
+                <div class="p-1">书籍目录</div>
+                <button id="add-yi-catalog" type="button" class="btn btn-primary">添加一级目录</button>
+            </div>
+        </div>
+
+        <div>
+            <ul id="catalog-list" class="list-group">
+                {% for yi in catalog %}
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="hidden" class="yi_input" value="{{ yi.id }}">
+                                <input type="text" class="form-control yi_li" placeholder="请输入一级目录名称" value="{{ yi.name }}">
+                            </div>
+                            <div class="col-6 d-flex justify-content-end">
+                                <div class="btn-group dropleft yi-btn" style="margin-right: 42px;">
+                                    <button type="button" class="btn btn-primary dropdown-toggle" 
+                                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-cog"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item add_er">添加</a>
+                                        <a class="dropdown-item" href="/book/book/?id={{ id }}&catalog_id={{ yi.id }}">编辑</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item yi_del">删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% if yi.cun %}
+                    <ul class="list-group">
+                        {% for er in yi.er %}
+                            <li class="list-group-item">
+                                <div class="row d-flex justify-content-end">
+                                    <div class="col-5">
+                                        <input type="hidden" class="er_input" value="{{ er.id }}">
+                                        <input type="text" class="form-control er_li" placeholder="请输入二级目录名称" value="{{ er.name }}">
+                                    </div>
+                                    <div class="col-6 d-flex justify-content-end">
+                                        <div class="btn-group dropleft yi-btn" style="margin-right: 22px;">
+                                            <button type="button" class="btn btn-primary dropdown-toggle" 
+                                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <i class="fa fa-cog"></i>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item add_san">添加</a>
+                                                <a class="dropdown-item" href="/book/book/?id={{ id }}&catalog_id={{ er.id }}">编辑</a>
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item er_del">删除</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if er.cun %}
+                                    <ul class="list-group">
+                                        {% for san in er.san %}
+                                            <li class="list-group-item">
+                                                <div class="row d-flex justify-content-end">
+                                                    <div class="col-4">
+                                                        <input type="hidden" class="san_input" value="{{ san.id }}">
+                                                        <input type="text" class="form-control san_li" placeholder="请输入三级目录名称" value="{{ san.name }}">
+                                                    </div>
+                                                    <div class="col-6 d-flex justify-content-end">
+                                                        <div class="btn-group dropleft yi-btn">
+                                                            <button type="button" class="btn btn-primary dropdown-toggle" 
+                                                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                <i class="fa fa-cog"></i>
+                                                            </button>
+                                                            <div class="dropdown-menu">
+                                                                <a class="dropdown-item" href="/book/book/?id={{ id }}&catalog_id={{ san.id }}">编辑</a>
+                                                                <div class="dropdown-divider"></div>
+                                                                <a class="dropdown-item san_del">删除</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="d-flex flex-row-reverse" style="margin-bottom: 20px;">
+            <button id="subm" type="button" class="btn btn-success">提交修改</button>
+        </div>
+
+    </div>
+
+    <!-- 退出 -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">是否确定退出</h5>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+            <button id="quit" type="button" class="btn btn-primary">确认退出</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.staticfile.org/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.14.7/umd/popper.min.js" ></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js" ></script>
+
+    <script>
+
+        $(function(){
+
+            // 退出
+            $('#quit').on('click', function(){
+                var CsrfToken = $("[name='csrfmiddlewaretoken']").val()
+
+                $.ajax({
+                    url: '/quit/',
+                    type: 'post',
+                    data:{
+                        'csrfmiddlewaretoken': CsrfToken
+                    },
+                    dataType: 'json',
+                    success: function(data){
+                        if(data.code == 200){
+                            location.reload(true)
+                        }else{
+                            alert(data.error)
+                        }
+                    }
+                })
+            })
+
+            // 调整目录结构
+            trim_yi_catalog()
+
+            // 添加一级目录
+            $('#add-yi-catalog').on('click', function(){
+                
+                // 获取一级目录个数
+                var yi_catalog = $('#catalog-list>li').length
+
+                html = ' <li id="catalog-'+yi_catalog+'" class="list-group-item">'
+                html += '<div class="row">'
+                html += ' <div class="col-6">'
+                html += '<input type="hidden" class="yi_input" value="-1">'
+                html += '<input type="text" class="form-control yi_li" placeholder="请输入一级目录名称"> '
+                html += '</div>'
+                html += '<div class="col-6 d-flex justify-content-end">'
+                html += ' <div class="btn-group dropleft yi-btn" style="margin-right: 42px;">'
+                html += '<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'
+                html += '<i class="fa fa-cog"></i>'
+                html += '</button>'
+                html += '<div class="dropdown-menu">'
+                html += ' <a class="dropdown-item add_er" href="javascript:add_er_catalog('+yi_catalog+');">添加</a>'
+                html += ' <a class="dropdown-item" href="javascript:;">编辑</a>'
+                html += '<div class="dropdown-divider"></div>'
+                html += '<a class="dropdown-item yi_del" href="javascript:del_yi_catalog('+yi_catalog+');">删除</a>'
+                html += ' </div></div></div></div> </li>'
+                
+                $('#catalog-list').append(html)
+
+            })
+            
+            // 提交修改
+            $('#subm').on('click', function(){
+
+                var data = []
+                $.each($('#catalog-list>li'), function(i, yi_li){
+                    
+                    // 判断该一级目录下是否有二级目录
+                    if ($('#catalog-'+i+'>ul').length == 0){
+                        // 不存在
+                        var cun = false
+                        data.push({
+                            'name': $(yi_li).find('.yi_li').val(),
+                            'id': $(yi_li).find('.yi_input').val(),
+                            'cun': cun
+                        })
+                    } 
+                    else{
+                        // 存在
+                        var cun = true
+                        // 遍历二级目录
+                        var er = []
+                        $.each($('#catalog-'+i+'>ul>li'), function(j, er_li){
+                            
+                            // 判断该二级目录下是否有三级目录
+                            if($('#catalog-'+i+'-'+j+'>ul').length == 0){
+                                var cun1 = false
+
+                                er.push({
+                                    'name': $(er_li).find('.er_li').val(),
+                                    'id': $(er_li).find('.er_input').val(),
+                                    'cun': cun1
+                                })
+                            }
+                            else{
+                                var cun1 = true
+                                
+                                // 遍历三级目录
+                                var san = []
+                                $.each($('#catalog-'+i+'-'+j+'>ul>li'), function(j, san_li){
+                                    san.push({
+                                        'name': $(san_li).find('.san_li').val(),
+                                        'id': $(san_li).find('.san_input').val(),
+                                    })
+                                })
+
+                                er.push({
+                                    'name': $(er_li).find('.er_li').val(),
+                                    'id': $(er_li).find('.er_input').val(),
+                                    'cun': cun1,
+                                    'san': san
+                                })
+                            }
+                        })
+
+                        data.push({
+                            'name': $(yi_li).find('.yi_li').val(),
+                            'id': $(yi_li).find('.yi_input').val(),
+                            'cun': cun,
+                            'er': er
+                        })
+                    } 
+                })
+                
+                var catalog_data = JSON.stringify(data)
+                var CsrfToken = $("[name='csrfmiddlewaretoken']").val()
+                var token = localStorage.getItem('token')
+                $.ajax({
+                    url: '/book/catalog/',
+                    type: 'post',
+                    data: {
+                        'csrfmiddlewaretoken': CsrfToken,
+                        'id': $('#book_id').val(),
+                        'data': catalog_data,
+                        'token': token
+                    },
+                    dataType: 'json',
+                    success: function(data){
+                        if(data.code == 200){
+                            alert('修改成功')
+                            location.reload(true)
+                        }else{
+                            alert(data.error)
+                        }
+                    }
+
+                })
+
+            })
+
+        })
+
+        // 添加二级目录
+        function add_er_catalog(i){
+
+            var er_ul = $('#catalog-'+i+'>ul')
+            if (er_ul.length == 0){
+                html = ' <ul class="list-group"></ul>'
+                $('#catalog-'+i).append(html)
+            }
+
+            var er_catalog = $('#catalog-'+i+'>ul>li').length
+
+            html = '<li id="catalog-'+i+'-'+er_catalog+'" class="list-group-item">'
+            html += ' <div class="row d-flex justify-content-end">'
+            html += '<div class="col-5">'
+            html += '<input type="hidden" class="er_input" value="-1">'
+            html += '<input type="text" class="form-control er_li" placeholder="请输入二级目录名称">'
+            html += '</div>'
+            html += '<div class="col-6 d-flex justify-content-end">'
+            html += '<div class="btn-group dropleft yi-btn" style="margin-right: 22px;">'
+            html += '<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'
+            html += '<i class="fa fa-cog"></i>'
+            html += ' </button>'
+            html += '<div class="dropdown-menu">'
+            html += '<a class="dropdown-item add_san" href="javascript:add_san_catalog('+i+', '+er_catalog+');">添加</a>'
+            html += '<a class="dropdown-item" href="javascript:;">编辑</a>'
+            html += '<div class="dropdown-divider"></div>'
+            html += ' <a class="dropdown-item er_del" href="javascript:del_er_catalog('+i+', '+er_catalog+');">删除</a>'
+            html += '</div></div></div></div></li>'
+            
+            $('#catalog-'+i+'>ul').append(html)
+
+        }
+
+        // 添加三级目录
+        function add_san_catalog(i, j){
+
+            var er_ul = $('#catalog-'+i+'-'+j+'>ul')
+            if(er_ul.length == 0){
+                html = ' <ul class="list-group"></ul>'
+                $('#catalog-'+i+'-'+j).append(html)
+            }
+            var san_catalog = $('#catalog-'+i+'-'+j+'>ul>li').length
+
+            html = ' <li id="catalog-'+i+'-'+j+'-'+san_catalog+'" class="list-group-item">'
+            html += ' <div class="row d-flex justify-content-end">'
+            html += ' <div class="col-4">'
+            html += '<input type="hidden" class="san_input" value="-1">'
+            html += '<input type="text" class="form-control san_li" placeholder="请输入三级目录名称">'
+            html += '</div>'
+            html += '<div class="col-6 d-flex justify-content-end">'
+            html += '<div class="btn-group dropleft yi-btn">'
+            html += '<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'
+            html += '<i class="fa fa-cog"></i>'
+            html += '</button>'
+            html += ' <div class="dropdown-menu">'
+            html += '<a class="dropdown-item" href="javascript:;">编辑</a>'
+            html += '<div class="dropdown-divider"></div>'
+            html += '<a class="dropdown-item san_del" href="javascript:del_san_catalog('+i+', '+j+', '+san_catalog+');">删除</a>'
+            html += '</div></div> </div></div></li>'
+
+            $('#catalog-'+i+'-'+j+'>ul').append(html)
+
+        }
+
+        // 删除三级目录
+        function del_san_catalog(i, j, k){
+           if (confirm('是否删除该三级目录')){
+                $('#catalog-' + i + '-' + j + '-' + k).remove()
+                trim_san_catalog(i, j)
+
+               if($('#catalog-'+i+'-'+j+'>ul>li').length == 0){
+                    $('#catalog-'+i+'-'+j+'>ul').remove()
+               }
+           }
+        }
+
+        // 删除二级目录
+        function del_er_catalog(i, j){
+            if (confirm('是否删除该二级目录')){
+                $('#catalog-' + i + '-' + j).remove()
+                trim_er_catalog(i)
+
+                if($('#catalog-'+i+'>ul>li').length == 0){
+                    $('#catalog-'+i+'>ul').remove()
+               }
+           }
+        }
+
+        // 删除一级目录
+        function del_yi_catalog(i){
+            if (confirm('是否删除该一级目录')){
+                $('#catalog-' + i).remove()
+                trim_yi_catalog()
+           }
+        }
+
+        // 整理三级目录
+        function trim_san_catalog(i, j){
+            var san_catalog = $('#catalog-' + i + '-' + j + '>ul>li')
+            for (var n=0; n<=san_catalog.length; n++){
+                $(san_catalog[n]).attr('id', 'catalog-' + i + '-' + j + '-' + n)
+                $('#catalog-' + i + '-' + j + '-' + n + ' .san_del').attr('href', 'javascript: del_san_catalog('+i+', '+j+', '+n+');')
+            }
+        }
+
+        // 整理二级目录
+        function trim_er_catalog(i){
+            var er_catalog = $('#catalog-' + i +'>ul>li')
+            for (var n=0; n<=er_catalog.length; n++){
+                $(er_catalog[n]).attr('id', 'catalog-' + i + '-' + n)
+                trim_san_catalog(i, n)
+                $('#catalog-' + i + '-' + n + ' .er_del').attr('href', 'javascript: del_er_catalog('+i+', '+n+');')
+                $('#catalog-' + i + '-' + n + ' .add_san').attr('href', 'javascript:add_san_catalog('+i+', '+n+');')
+            }
+        }
+
+        // 整理一级目录
+        function trim_yi_catalog(){
+            var yi_catalog = $('#catalog-list>li')
+            for (var n=0; n<=yi_catalog.length; n++){
+                $(yi_catalog[n]).attr('id', 'catalog-' + n)
+                trim_er_catalog(n)
+                $('#catalog-' + n + ' .yi_del').attr('href', 'javascript:del_yi_catalog('+n+');')
+                $('#catalog-' + n + ' .add_er').attr('href', 'javascript:add_er_catalog('+n+');')
+            }
+        }
+
+    </script>
+</body>
+</html>
+
+{% else %}
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title></title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    </head>
+    <body>
+        <script>
+            location.href = '/login/'
+        </script>
+    </body>
+{% endif %}

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客首页</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body{
+            background: #000 url(/static/img/pattern.png);
+        }
+        .container{
+            background-color: #fff;
+            margin-top: 20px;
+            margin-bottom: 200px;
+        }
+        .bor{
+            border: solid 1px black;
+        }
+        .top-title{
+            padding: 20px 0;
+        }
+        .index-login{
+            position: absolute; 
+            right: 20px; 
+            bottom: 8px;
+        }
+        .tab-min-hei{
+            min-height: 200px;
+            padding: 5px;
+        }
+        .er-mar{
+            margin-top: 20px;
+        }
+        .right-lan{
+            margin: 10px 0 20px 0;
+        }
+        .tab-list{
+            list-style-type: none;
+            padding: 0;
+        }
+        .tab-list>li{
+            float: left;
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+        .tab-list>li>a{
+            padding: 2px 5px;
+        }
+        .kuo{
+            margin-left: 3px;
+            margin-right: 10px;
+        }
+        .note-list{
+            margin-bottom: 10px;
+        }
+        .card-img-hei{
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h4 class="top-title">我们的征途，是星辰大海</h4>
+
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            {% csrf_token %}
+            <a class="navbar-brand" href="/">首页</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                <a class="nav-link" href="/article/">文章 <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/note/?page=1">笔记</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/book/">书籍</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/tool/">工具箱</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav index-login">
+                {% if user.userIF %}
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">欢迎你({{ user.name }})</a>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+                            退出
+                        </button>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/login/">登录</a>
+                    </li>
+                {% endif %}
+            </ul>
+            </div>
+        </nav>
+        <!-- 信息栏 -->
+        <div class="row er-mar">
+
+            <!-- 轮播图 -->
+            <div class="col-9">
+                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                    <ol class="carousel-indicators">
+                        {% for ro in rot_max %}
+                            {% if forloop.first %}
+                                <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                            {% else %}
+                                <li data-target="#carouselExampleIndicators" data-slide-to="{{ ro }}"></li>
+                            {% endif %}
+                        {% endfor %}
+                    </ol>
+                    <div class="carousel-inner">
+                        {% for or in rotation_chart %}
+                            {% if forloop.first %}
+                                <div class="carousel-item active">
+                                    <img src="/{{ or.img }}" class="d-block w-100" alt="...">
+                                </div>
+                            {% else %}
+                                <div class="carousel-item">
+                                    <img src="/{{ or.img }}" class="d-block w-100" alt="...">
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                      <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                      <span class="sr-only">Next</span>
+                    </a>
+                  </div>
+            </div>
+            <!-- 信息统计 -->
+            <div class="col-3">
+                <ul class="nav nav-tabs border nav-fill" id="myTab" role="tablist">
+                    <li class="nav-item">
+                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" 
+                          role="tab" aria-controls="home" aria-selected="true">公告</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" 
+                          role="tab" aria-controls="profile" aria-selected="false">信息统计</a>
+                    </li>
+                </ul>
+                <div class="tab-content border border-top-0 tab-min-hei" id="myTabContent">
+                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                        {% for notice in not_list %}
+                            <p>{{ notice.not_content }}</p>
+                        {% endfor %}
+                    </div>
+                    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <td><small class="text-muted float-left">日浏览人数</small></td>
+                                    <td>{{ statue.ri_browse_ren }}</td>
+                                </tr>
+                            <tr>
+                                <td><small class="text-muted float-left">日浏览次数</small></td>
+                                <td>{{ statue.ri_browse_ci }}</td>
+                            </tr>
+                            <tr>
+                                <td><small class="text-muted float-left">总浏览次数</small></td>
+                                <td>{{ statue.sum_browse_ren }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 分类滑动门 -->
+        <div>
+            <nav style="margin-bottom: 10px;">
+                <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                    <a class="nav-item nav-link active" id="article-tab" data-toggle="tab" href="#article" 
+                          role="tab" aria-controls="article" aria-selected="true">文章</a>
+
+                    <a class="nav-item nav-link" id="note-tab" data-toggle="tab" href="#note" 
+                          role="tab" aria-controls="note" aria-selected="false">笔记</a>
+
+                    <a class="nav-item nav-link" id="book-tab" data-toggle="tab" href="#book" 
+                          role="tab" aria-controls="book" aria-selected="false">书籍</a>
+
+                    <a class="nav-item nav-link" id="tool-tab" data-toggle="tab" href="#tool" 
+                          role="tab" aria-controls="tool" aria-selected="false">工具</a>
+                </div>
+            </nav>
+
+            <div class="tab-content">
+                <!-- 最新文章 -->
+                <div class="tab-pane fade show active" id="article" role="tabpanel" aria-labelledby="article-tab">
+                    <div class="row">
+                        <!-- 文章列表 -->
+                        <div class="col-9">
+                            {% for art in article_list %}
+                                <div class="card mb-3">
+                                    <div class="row no-gutters">
+                                      <div class="col-md-4">
+                                          <a href="/article/article/?id={{ art.id }}">
+                                            <img src="/{{ art.img }}" class="card-img" alt="...">
+                                          </a>
+                                      </div>
+                                      <div class="col-md-8">
+                                        <div class="card-body">
+                                          <h5 class="card-title">{{ art.title }}</h5>
+                                          <p class="card-text">{{ art.introduce }}</p>
+                                          <p class="card-text">
+                                              <small class="text-muted float-left">
+                                                  <i class="fa fa-calendar-check-o"></i>
+                                                  <span class="kuo" data-toggle="tooltip" data-placement="top" title="创建时间">{{ art.creation_time }}</span>
+                                                  <i class="fa fa-calendar-times-o"></i><span class="kuo">{{ art.disparity }}天前</span>
+                                              </small>
+                                                <small class="text-muted float-right">
+                                                    <i class="fa fa-eye"></i>
+                                                    <span class="kuo" data-toggle="tooltip" data-placement="top" title="观看数">{{ art.browse_number }}</span>
+                                                    <i class="fa fa-commenting"></i>
+                                                    <span class="kuo" data-toggle="tooltip" data-placement="top" title="评论数">{{ art.comment_number }}</span>
+                                                </small>
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <!-- 文章信息 -->
+                        <div class="col-3">
+                            <!-- 文章搜索栏 -->
+                            <div class="input-group mb-3">
+                                <input id="search-article" type="text" class="form-control" placeholder="输入文章">
+                                <div class="input-group-append">
+                                  <button onclick="search('article')" class="btn btn-outline-secondary" type="button">搜索</button>
+                                </div>
+                              </div>
+                            <!-- 文章分类 -->
+                            <div class="card right-lan">
+                                <div class="card-header bg-primary text-light">
+                                分类
+                                </div>
+                                <div class="list-group">
+                                    {% for cla in cla_list %}
+                                        <a href="/search/?class=article_class&name={{ cla.name }}"
+                                           class="list-group-item list-group-item-action">{{ cla.name }}
+                                            <span class="badge badge-light float-right">{{ cla.number }}</span>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 笔记更新 -->
+                <div class="tab-pane fade" id="note" role="tabpanel" aria-labelledby="note-tab">
+                    
+                    <div class="row">
+
+                        <!-- 笔记列表 -->
+                        <div class="col-9">
+
+                            <div  class="row">
+
+                                {% for note in note_list %}
+                                    <div class="col-4 note-list">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                {% if user.userIF %}
+                                                    <a href="/note/note/catalog/?id={{ note.id }}">
+                                                        <img class="card-img-top" src="/{{ note.img }}" alt="">
+                                                    </a>
+                                                {% else %}
+                                                    <a href="/note/note/?note_id={{ note.id }}">
+                                                        <img class="card-img-top" src="/{{ note.img }}" alt="">
+                                                    </a>
+                                                {% endif %}
+                                                
+                                            </div>
+                                            <div class="card-footer text-muted">
+                                                {{ note.title }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                
+                            </div>
+                        </div>
+
+                        <!-- 笔记信息 -->
+                        <div class="col-3">
+
+                             <!-- 笔记搜索栏 -->
+                             <div class="input-group mb-3">
+                                <input id="search-note" type="text" class="form-control" placeholder="输入笔记名称">
+                                <div class="input-group-append">
+                                  <button onclick="search('note')" class="btn btn-outline-secondary" type="button">搜索</button>
+                                </div>
+                            </div>
+
+                            <!-- 更新信息 -->
+                            <div class="card right-lan">
+                                <div class="card-header bg-primary text-light">
+                                更新信息
+                                </div>
+  
+                                <ul class="list-group">
+
+                                    {% for note_date in note_date_list %}
+                                        <li class="list-group-item">
+                                            <small class="text-muted">
+                                                {{ note_date }}
+                                            </small>
+                                        </li>
+
+                                    {% endfor %}
+
+                                </ul>
+  
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- 书籍更新 -->
+                <div class="tab-pane fade" id="book" role="tabpanel" aria-labelledby="book-tab">
+                    
+                    <div class="row">
+
+                        <!-- 书籍列表 -->
+                        <div class="col-9">
+
+                            <div  class="row">
+                                {% for book in book_list %}
+                                    <div class="col-4 note-list">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                            <a href="/book/book/?id={{ book.id }}">
+                                                <img class="card-img-top" src="/{{ book.img }}" alt="">
+                                            </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+
+                        <!-- 书籍信息 -->
+                        <div class="col-3">
+
+                             <!-- 书籍搜索栏 -->
+                             <div class="input-group mb-3">
+                                <input id="search-book" type="text" class="form-control" placeholder="输入书籍名称">
+                                <div class="input-group-append">
+                                  <button onclick="search('book')" class="btn btn-outline-secondary" type="button">搜索</button>
+                                </div>
+                            </div>
+
+                            <!-- 更新信息 -->
+                            <div class="card right-lan">
+                                <div class="card-header bg-primary text-light">
+                                更新信息
+                                </div>
+                                <ul class="list-group">
+                                    {% for book_date in book_date_list %}
+                                        <li class="list-group-item">
+                                            <small class="text-muted">{{ book_date }}</small>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+  
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- 最新工具 -->
+                <div class="tab-pane fade" id="tool" role="tabpanel" aria-labelledby="tool-tab">
+                   
+                    <div class="row">
+
+                        <!-- 工具列表 -->
+                        <div class="col-9">
+
+                            <div  class="row">
+
+                                <div class="col-3 note-list">
+                                    <div class="card text-center">
+                                        <div class="card-body">
+                                        <a>
+                                            <img class="card-img-top card-img-hei" src="" alt="">
+                                        </a>
+                                        </div>
+                                        <div class="card-footer text-muted">
+                                            暂时没有内容
+                                          </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- 工具信息 -->
+                        <div class="col-3">
+
+                             <!-- 工具搜索栏 -->
+                             <div class="input-group">
+                                <input type="text" class="form-control" 
+                                              aria-label="Amount (to the nearest dollar)" placeholder="工具名">
+                                <div class="input-group-append">
+                                  <span class="input-group-text">搜索</span>
+                                </div>
+                            </div>
+
+                            <!-- 更新信息 -->
+                            <div class="card right-lan">
+                                <div class="card-header bg-primary text-light">
+                                更新信息
+                                </div>
+                                <ul class="list-group">
+                                    <li class="list-group-item">
+                                        <small class="text-muted">
+                                            暂时没有内容
+                                        </small>
+                                    </li> 
+                                </ul>
+  
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 退出 -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">是否确定退出</h5>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+            <button id="quit" type="button" class="btn btn-primary">确认退出</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.staticfile.org/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.14.7/umd/popper.min.js" ></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js" ></script>
+
+    <script>
+
+        // 冒泡插件初始化
+        $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+
+                // 退出
+                $('#quit').on('click', function(){
+                    var CsrfToken = $("[name='csrfmiddlewaretoken']").val()
+
+                    $.ajax({
+                        url: '/quit/',
+                        type: 'post',
+                        data:{
+                            'csrfmiddlewaretoken': CsrfToken
+                        },
+                        dataType: 'json',
+                        success: function(data){
+                            if(data.code == 200){
+                                location.reload(true)
+                            }else{
+                                alert(data.error)
+                            }
+                        }
+                    })
+                })
+        })
+
+        // 搜索
+        function search(cla){
+
+            if(cla == 'article'){
+                var name = $('#search-article').val()
+                if(!name){
+                    alert('搜索不能为空')
+                    return
+                }
+                location.href = '/search/?class=article&name=' + name
+            }else if(cla == 'note'){
+                var name = $('#search-note').val()
+                if(!name){
+                    alert('搜索不能为空')
+                    return
+                }
+                location.href = '/search/?class=note&name=' + name
+            }else if(cla == 'book'){
+                var name = $('#search-book').val()
+                if(!name){
+                    alert('搜索不能为空')
+                    return
+                }
+                location.href = '/search/?class=book&name=' + name
+            }
+        }
+
+    </script>
+
+</body>
+</html>

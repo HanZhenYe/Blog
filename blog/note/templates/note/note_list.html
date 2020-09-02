@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+{% if user.userIF %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body{
+            background: #000 url(/static/img/pattern.png);
+        }
+        .container{
+            background-color: #fff;
+            margin-top: 20px;
+            margin-bottom: 200px;
+            overflow: hidden;
+        }
+        .bor{
+            border: solid 1px black;
+        }
+        .top-title{
+            padding: 20px 0;
+        }
+        .index-login{
+            position: absolute; 
+            right: 20px; 
+            bottom: 8px;
+        }
+        .img-btn{
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+        }
+        .alert{
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .yi-btn{
+            margin-right: 21px;
+        }
+        .ul-hei{
+            padding-bottom: 50px;
+        }
+        .list-er{
+            margin-left: 60px; 
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h4 class="top-title">我们的征途，是星辰大海</h4>
+        <input id="note-id" type="hidden" value="{{ id }}">
+
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="/">首页</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" 
+                            data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 
+                            aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                <a class="nav-link" href="/article/">文章 <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link active" href="/note/?page=1">笔记</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/book/">书籍</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/tool/">工具箱</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav index-login">
+                {% if user.userIF %}
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">欢迎你({{ user.name }})</a>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+                            退出
+                        </button>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/login/">登录</a>
+                    </li>
+                {% endif %}
+            </ul>
+            </div>
+        </nav>
+
+         <!-- 面包屑导航 -->
+         <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/">首页</a></li>
+              <li class="breadcrumb-item"><a href="/note/?page=1">笔记</a></li>
+              <li class="breadcrumb-item"><a href="/note/note/?note_id={{ id }}">{{ title }}</a></li>
+              <li class="breadcrumb-item active" aria-current="page">目录编辑</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+
+            <div class="col-3">
+                
+            <div class="card text-center">
+                <div class="card-body">
+                    <img class="card-img-top" src="/static/img/biji.jpg">
+                </div>
+            </div>
+
+            </div>
+            <div class="col-6 ">
+
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">标题</span>
+                    </div>
+                    <input id="note_id" type="hidden" value="{{ id }}">
+                    <input type="text" class="form-control" value="{{ title }}" readonly="readonly">
+                </div>
+
+            </div>
+            <div class="col-3">
+
+                <div class="card">
+                    <div class="card-header">
+                    状态
+                    </div>
+                    <div class="card-body">
+    
+                        <table class="table table-hover">
+                            <tbody>
+                            <tr>
+                                <td><small class="text-muted float-right">创建时间:</small></td>
+                                <td><small class="text-muted float-right">{{ creation_time | date:'Y年m月d日' }}</small></td>
+                            </tr>
+                            <tr>
+                                <td><small class="text-muted float-right">上次更新:</small></td>
+                                <td><small class="text-muted float-right">{{ update_time | date:'Y年m月d日' }}</small></td>
+                            </tr>
+                            <tr>
+                                <td><small class="text-muted float-right">浏览数量:</small></td>
+                                <td><small class="text-muted float-right">{{ browse_number }}</small></td>
+                            </tr>
+                            </tbody>
+                        </table>
+  
+                    </div>
+                </div>
+  
+            </div>
+
+        </div>
+
+        <div class="alert alert-dark" role="alert" >
+            <span class="h3">笔记目录</span>
+            <a class="btn btn-primary float-right" href="javascript:add_yi();" role="button">添加一级目录</a>
+        </div>
+
+        <!-- 笔记列表区 -->
+        <div>
+            <ul id="catalog" class="list-group ul-hei">
+
+                {% for cat in catalog  %}
+                    <li class="list-group-item"  id="catalog-{{ forloop.counter0 }}">
+                        <div class="row">
+
+                            <div class="col-6 input-group flex-nowrap">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">名称</span>
+                                </div>
+                            <input type="text" class="form-control catalog-title" placeholder="请输入名称" value="{{ cat.mu }}">
+                            </div>
+
+                            <div class="col-6 d-flex flex-row-reverse">
+                            
+                                <div class="btn-group dropleft yi-btn">
+                                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-cog"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                    
+                                        <a class="dropdown-item" href="javascript:add_er({{ forloop.counter0 }});">添加</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="javascript:del_yi({{ forloop.counter0 }});">删除</a>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <ul class="list-group list-er">
+                            {% for er in cat.ex %}
+                            <li class="list-group-item" id="er-{{ forloop.parentloop.counter0 }}-{{ forloop.counter0 }}">
+
+                                <div class="row">
+
+                                    <div class="col-6 input-group flex-nowrap">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">名称</span>
+                                        </div>
+                                        <input class="note_content_id" type="hidden" value="{{ er.id }}">
+                                        <input type="text" class="form-control note_er_title" placeholder="请输入名称" value="{{ er.name }}">
+                                    </div>
+            
+                                    <div class="col-6 d-flex flex-row-reverse">
+                                        <div class="btn-group dropleft">
+                                            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <i class="fa fa-cog"></i>
+                                            </button>
+                                            <div class="dropdown-menu">
+        
+                                                <a class="dropdown-item" href="/note/note/?note_id={{ id }}&content_id={{ er.id }}">编辑</a>
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" href="javascript:del_er({{ forloop.parentloop.counter0}}, {{ forloop.counter0 }});">删除</a>
+            
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+
+                    </li>
+                {% endfor %}
+
+
+            </ul>
+        </div>
+
+        <div>
+            {% csrf_token %}
+            <div class="d-flex justify-content-between" style="margin-bottom: 20px;">
+                <a class="btn btn-danger"  href="javascript:;">删除</a>
+                <a class="btn btn-success" href="javascript:submit_modify();">提交修改</a>
+              </div>
+        </div>
+    </div>
+    
+    <!-- 退出 -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">是否确定退出</h5>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+            <button id="quit" type="button" class="btn btn-primary">确认退出</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.staticfile.org/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.14.7/umd/popper.min.js" ></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js" ></script>
+
+    <script>
+
+        // 用于记录是否修改, 默认为不修改
+        var Modify_or_not = false
+
+        // 添加一级目录
+        function add_yi(){
+
+            Modify_or_not = true
+
+            var catalog_yi_id =  $('#catalog>li').length
+            html = ''
+            html += '<li class="list-group-item" id="catalog-'+catalog_yi_id+'">'
+            html += ' <div class="row">'
+            html += '<div class="col-6 input-group flex-nowrap">'
+            html += '<div class="input-group-prepend">'
+            html += '<span class="input-group-text">名称</span>'
+            html += '</div>'
+            html += '<input type="text" class="form-control catalog-title" placeholder="请输入名称">'
+            html += ' </div>'
+            html += '<div class="col-6 d-flex flex-row-reverse">'
+            html += '<div class="btn-group dropleft yi-btn">'
+            html += '<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'
+            html += '<i class="fa fa-cog"></i>'
+            html += ' </button>'
+            html += '<div class="dropdown-menu">'
+            html += '<a class="dropdown-item" href="javascript:add_er('+catalog_yi_id+');">添加</a>'
+            html += '<div class="dropdown-divider"></div>'
+            html += '<a class="dropdown-item" href="javascript:del_yi('+catalog_yi_id+');">删除</a>'
+            html += '</div></div></div></div> '
+            html += ' <ul class="list-group list-er"></ul></li>'
+            $('#catalog').append(html)
+
+        }
+
+        // 添加二级目录
+        function add_er(yi_id){
+            var catalog_yi_id = 'catalog-' + yi_id
+            var $catalog_ul = $('#' + catalog_yi_id + '>ul')
+
+            if ($('#' + catalog_yi_id + ' .catalog-title').val() != ''){
+                console.log('二级目录添加成功')
+            }else{
+               alert('请先填写该目录名称')
+                return 
+            }
+            html = ''
+            html += '<li class="list-group-item" id="er-'+yi_id+'-'+$('#' + catalog_yi_id + '>ul>li').length+'">'
+            html += '<div class="row">'
+            html += '<div class="col-6 input-group flex-nowrap">'
+            html += '<div class="input-group-prepend">'
+            html += '<span class="input-group-text">名称</span>'
+            html += '</div>'
+            html += '<input class="note_content_id" type="hidden" value="-1">'
+            html += '<input type="text" class="form-control note_er_title" placeholder="请输入名称">'
+            html += '</div>'
+            html += '<div class="col-6 d-flex flex-row-reverse">'
+            html += '<div class="btn-group dropleft">'
+            html += '<button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'
+            html += '<i class="fa fa-cog"></i>'
+            html += '</button>'
+            html += '<div class="dropdown-menu">'
+            html += '<a class="dropdown-item" href="javascript:;">编辑</a>'
+            html += '<div class="dropdown-divider"></div>'
+            html += '<a class="dropdown-item" href="javascript:del_er('+yi_id+', '+$('#' + catalog_yi_id + '>ul>li').length+');">删除</a>'
+            html += '</div></div></div></div></li>'   
+
+            $catalog_ul.append(html)
+        }
+
+        // 提交修改
+        function submit_modify(){
+            var note = []
+            var $catalog = $('#catalog>li')
+            $.each($catalog, function(i, catalog){
+                note_er = []
+                $.each($(catalog).find('.list-er>li'), function(j, cat){
+
+                    name = $(cat).find('.note_er_title').val()
+                    content_id = $(cat).find('.note_content_id').val()
+
+                    if (name != ''){
+                        cc = {
+                            'name': name,
+                            'id': content_id
+                        }
+                        note_er.push(cc)
+                    }else{
+                        console.log('跳过该内容')
+                    }
+                })
+                bb = {
+                    'mu': $(catalog).find('.catalog-title').val(),
+                    'ex': note_er
+                }
+                note.push(bb)
+            })
+            content_data = JSON.stringify(note)
+            var CsrfToken = $("[name='csrfmiddlewaretoken']").val()
+            var token = localStorage.getItem('token')
+
+            $.ajax({
+                url: '/note/note/catalog/',
+                type: 'post',
+                data: {
+                    'data': content_data,
+                    'id': $('#note-id').val(),
+                    'token': token,
+                    'csrfmiddlewaretoken': CsrfToken
+                },
+                dataType: 'json',
+                success: function(data){
+                    if(data.code == 200){
+                        alert('提交成功')
+                        location.reload(true)
+                    }else{
+                        alert(data.error)
+                    }
+                }
+            })
+        }
+
+        // 删除一级目录
+        function del_yi(not_id){
+            var kai = confirm('你确定要删除吗?')
+            if (kai){
+                $('#catalog-' + not_id).remove()
+            }
+        }
+
+        // 删除二级目录
+        function del_er(i, j){
+            var kai = confirm('你确定要删除吗?')
+            if (kai){
+                $('#er-' +i + '-' + j).remove()
+            }
+        }
+    
+        // 退出
+        $('#quit').on('click', function(){
+            var CsrfToken = $("[name='csrfmiddlewaretoken']").val()
+
+            $.ajax({
+                url: '/quit/',
+                type: 'post',
+                data:{
+                    'csrfmiddlewaretoken': CsrfToken
+                },
+                dataType: 'json',
+                success: function(data){
+                    if(data.code == 200){
+                        location.reload(true)
+                    }else{
+                        alert(data.error)
+                    }
+                }
+            })
+        })
+    
+    </script>
+
+</body>
+</html>
+{% else %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ title }}</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+    <body>
+        <script>
+            location.href = '/login/'
+        </script>
+    </body>
+</html>
+{% endif %}

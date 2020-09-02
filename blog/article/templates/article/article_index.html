@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body{
+            background: #000 url(/static/img/pattern.png);
+        }
+        .container{
+            background-color: #fff;
+            margin-top: 20px;
+            margin-bottom: 200px;
+        }
+        .bor{
+            border: solid 1px black;
+        }
+        .top-title{
+            padding: 20px 0;
+        }
+        .index-login{
+            position: absolute; 
+            right: 20px; 
+            bottom: 8px;
+        }
+        .tab-list{
+            list-style-type: none;
+            padding: 0;
+        }
+        .tab-list>li{
+            float: left;
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+        .tab-list>li>a{
+            padding: 2px 5px;
+        }
+        .kuo{
+            margin-left: 3px;
+            margin-right: 10px;
+        }
+        .right-lan{
+            margin: 10px 0 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h4 class="top-title">我们的征途，是星辰大海</h4>
+
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            {% csrf_token %}
+            <a class="navbar-brand" href="/">首页</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" 
+                            data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 
+                            aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                <a class="nav-link active" href="/article/">文章 <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/note/?page=1">笔记</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/book/">书籍</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/tool/">工具箱</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav index-login">
+                {% if user.userIF %}
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">欢迎你({{ user.name }})</a>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+                            退出
+                        </button>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/login/">登录</a>
+                    </li>
+                {% endif %}
+            </ul>
+            </div>
+        </nav>
+
+        <!-- 面包屑导航 -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/">首页</a></li>
+              <li class="breadcrumb-item active" aria-current="page">文章</li>
+            </ol>
+        </nav>
+
+        <!-- 分类 -->
+        <div style="margin-bottom: 20px;">
+
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a id="nav-new" class="nav-link active" href="javascript:page_class(1, 1);">最新创建</a>
+                </li>
+                <li class="nav-item">
+                    <a id="nav-most" class="nav-link" href="javascript:page_class(2, 1);">最多浏览</a>
+                </li>
+            </ul>
+  
+        </div>
+
+        <!-- 文章信息 -->
+        <div class="row">
+
+            <!-- 文章列表 -->
+            <div id="article-list" class="col-9">
+                <div>
+                    {% for art in article_list %}
+                    <div class="card mb-3">
+                    <div class="row no-gutters">
+                      <div class="col-md-4">
+                          <a href="/article/article/?id={{ art.id }}">
+                            <img src="/{{ art.img }}" class="card-img" alt="...">
+                          </a>
+                      </div>
+                      <div class="col-md-8">
+                        <div class="card-body">
+                          <h5 class="card-title">{{ art.title }}</h5>
+                          <p class="card-text">{{ art.introduce }}</p>
+                          <p class="card-text">
+                              <small class="text-muted float-left">
+                                  <i class="fa fa-calendar-check-o"></i>
+                                  <span class="kuo" data-toggle="tooltip" data-placement="top" title="创建时间">{{ art.creation_time }}</span>
+                                  <i class="fa fa-calendar-times-o"></i><span class="kuo">{{ art.disparity }}天前</span>
+                                </small>
+                                <small class="text-muted float-right">
+                                    <i class="fa fa-eye"></i>
+                                    <span class="kuo" data-toggle="tooltip" data-placement="top" title="观看数">{{ art.browse_number }}</span>
+                                    <i class="fa fa-commenting"></i>
+                                    <span class="kuo" data-toggle="tooltip" data-placement="top" title="评论数">{{ art.comment_number }}</span>
+                                </small>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
+                {% endfor %}
+
+                </div>
+                
+
+                <nav aria-label="...">
+                    <ul class="pagination pagination-lg justify-content-center">
+
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">上一页</a>
+                        </li>
+                        {% for page in page_count %}
+                            {% if page == 1 %}
+                                <li class="page-item active">
+                                    <a class="page-link" href="javascript:page_class(1, 1);">{{ page }}</a></li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="javascript:page_class(1, {{ page }});">{{ page }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if page_count == 2 %}
+                            <li class="page-item">
+                                <a class="page-link disabled" href="#">下一页</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link disabled" href="javascript:page_class(1, 2);">下一页</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+  
+            </div>
+
+            <!-- 文章信息 -->
+            <div class="col-3">
+
+                <!-- 文章搜索栏 -->
+                <div class="input-group mb-3">
+                    <input id="search-article" type="text" class="form-control" placeholder="输入文章">
+                    <div class="input-group-append">
+                      <button onclick="search('article')" class="btn btn-outline-secondary" type="button">搜索</button>
+                    </div>
+                  </div>
+
+                <!-- 文章分类 -->
+                <div class="card right-lan">
+                    <div class="card-header bg-primary text-light">
+                    分类
+                    </div>
+
+                    <div class="list-group">
+                        {% for cla in classif_list %}
+                            <a href="/search/?class=article_class&name={{ cla.name }}" class="list-group-item list-group-item-action">{{ cla.name }}
+                                <span class="badge badge-light float-right">{{ cla.number }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+                <!-- 标签云 -->
+                <div class="card right-lan">
+                    <div class="card-header bg-primary text-light">
+                    标签云
+                    </div>
+                    <div class="card-body">
+                    
+                       <ul class="tab-list">
+                           <li><a class="text-light bg-primary" href="#">部署</a></li>
+                           <li><a class="text-light bg-secondary" href="#">属性</a></li>
+                           <li><a class="text-light bg-success" href="#">部署</a></li>
+                           <li><a class="text-light bg-danger" href="#">属性</a></li>
+                           <li><a class="text-light bg-warning" href="#">部署</a></li>
+                           <li><a class="text-light bg-info" href="#">属性</a></li>
+                           <li><a class="text-light bg-dark" href="#">部署</a></li>
+                       </ul>
+                        
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    
+    <!-- 退出 -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">是否确定退出</h5>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+            <button id="quit" type="button" class="btn btn-primary">确认退出</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.staticfile.org/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.14.7/umd/popper.min.js" ></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js" ></script>
+
+    <script>
+
+        // 冒泡插件初始化
+        $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+        })
+
+        // 最新与最多浏览切换
+        function page_class(sw, page, url_data){
+            $new = $('#nav-new')
+            $most = $('#nav-most')
+
+            if(sw == 1){
+                var article_class = 'new'
+                $most.removeClass('active')
+                $new.addClass('active')
+            }else{
+                var article_class = 'most'
+                $most.addClass('active')
+                $new.removeClass('active')
+            }
+
+            // 获取最新或最多的第一页数据
+            $.ajax({
+                url: '/article/article/page/',
+                type: 'get',
+                dataType: 'json',
+                data: {
+                    'page': page, 
+                    'article_class': article_class
+                },
+                success: function(data){
+                    if(data.code == 200){
+                        data = data.data
+                        page_count = data.page_count
+                        paclass = data.paclass
+                        console.log(data)
+                        $('#article-list>div').remove()
+                        $('#article-list>nav').remove()
+
+                        html = '<div>'
+                        $.each(data.article_list, function(i, art){
+                            html += ' <div class="card mb-3">'
+                            html += '<div class="row no-gutters">'
+                            html += '<div class="col-md-4">'
+                            html += '<a href="/article/article/?id='+art.id+'">'
+                            html += ' <img src="/'+art.img+'" class="card-img" alt="..."></a>'
+                            html += '</div>'
+                            html += '<div class="col-md-8">'
+                            html += '<div class="card-body">'
+                            html += '<h5 class="card-title">'+art.title+'</h5>'
+                            html += '<p class="card-text">'+art.introduce+'</p>'
+                            html += '<p class="card-text">'
+                            html += '<small class="text-muted float-left">'
+                            html += '<i class="fa fa-calendar-check-o"></i>'
+                            html += '<span class="kuo" data-toggle="tooltip" data-placement="top" title="创建时间">'+art.creation_time+'</span>'
+                            html += ' <i class="fa fa-calendar-times-o"></i><span class="kuo">'+art.disparity+'天前</span>'
+                            html += '</small>'
+                            html += '<small class="text-muted float-right">'
+                            html += ' <i class="fa fa-eye"></i>'
+                            html += '<span class="kuo" data-toggle="tooltip" data-placement="top" title="观看数">'+art.browse_number+'</span>'
+                            html += '<i class="fa fa-commenting"></i>'
+                            html += '<span class="kuo" data-toggle="tooltip" data-placement="top" title="评论数">'+art.comment_number+'</span>'
+                            html += '</small></p></div> </div></div></div>'
+                        })
+                        html += '</div>'
+
+                        html += '<nav aria-label="...">'
+                        html += '<ul class="pagination pagination-lg justify-content-center">'
+                        if (data.page == 1){
+                            html += '<li class="page-item disabled">'
+                            html += '<a class="page-link" href="#" tabindex="-1">上一页</a>'
+                            html += '</li>'
+                        }else{
+                            html += '<li class="page-item">'
+                            html += '<a class="page-link" href="javascript:page_class('+paclass+', '+(page - 1)+' );" tabindex="-1">上一页</a>'
+                            html += '</li>'
+                        }
+
+                        $.each(page_count, function(j, num){
+                            if (num == page){
+                                html += '<li class="page-item active"><a class="page-link" href="javascript:page_class('+paclass+', '+num+' );">'+num+'</a></li>'
+                            }else{
+                                html += '<li class="page-item"><a class="page-link" href="javascript:page_class('+paclass+', '+num+' );">'+num+'</a></li>'
+                            }
+                        })
+                        
+                        if (page_count[page_count.length - 1] == page){
+                            html += '<li class="page-item disabled">'
+                            html += '<a class="page-link" href="#">下一页</a>'
+                        }else{
+                            html += '<li class="page-item">'
+                            html += '<a class="page-link " href="javascript:page_class('+paclass+', '+(page + 1)+' );">下一页</a>'
+                        }
+                        html += '</li></ul></nav>'
+
+                        $('#article-list').append(html)
+                    }else{
+                        alert(data.error)
+                    }
+                }
+            })
+            
+
+        }
+
+         // 退出
+         $('#quit').on('click', function(){
+            var CsrfToken = $("[name='csrfmiddlewaretoken']").val()
+
+            $.ajax({
+                url: '/quit/',
+                type: 'post',
+                data:{
+                    'csrfmiddlewaretoken': CsrfToken
+                },
+                dataType: 'json',
+                success: function(data){
+                    if(data.code == 200){
+                        location.reload(true)
+                    }else{
+                        alert(data.error)
+                    }
+                }
+            })
+        })
+            
+            // 搜索
+        function search(cla){
+
+            if(cla == 'article'){
+                var name = $('#search-article').val()
+                if(!name){
+                    alert('搜索不能为空')
+                    return
+                }
+                location.href = '/search/?class=article&name=' + name
+            }else if(cla == 'note'){
+                var name = $('#search-note').val()
+                if(!name){
+                    alert('搜索不能为空')
+                    return
+                }
+                location.href = '/search/?class=note&name=' + name
+            }
+        }
+
+
+    </script>
+
+    
+
+</body>
+</html>
